@@ -10,8 +10,8 @@ import torch.nn.functional as F
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 
-from data_loader import iCIFAR10, iCIFAR100
-from model import iCaRLNet
+from icarl.data_loader import iCIFAR10, iCIFAR100
+from icarl.model import iCaRLNet
 
 def show_images(images):
     N = images.shape[0]
@@ -54,7 +54,7 @@ icarl.cuda()
 
 for s in range(0, total_classes, num_classes):
     # Load Datasets
-    print "Loading training examples for classes", range(s, s+num_classes)
+    print ("Loading training examples for classes", range(s, s+num_classes))
     train_set = iCIFAR10(root='./data',
                          train=True,
                          classes=range(s,s+num_classes),
@@ -82,17 +82,17 @@ for s in range(0, total_classes, num_classes):
 
     # Construct exemplar sets for new classes
     for y in xrange(icarl.n_known, icarl.n_classes):
-        print "Constructing exemplar set for class-%d..." %(y),
+        print ("Constructing exemplar set for class-%d..." %(y))
         images = train_set.get_image_class(y)
         icarl.construct_exemplar_set(images, m, transform_test)
-        print "Done"
+        print ("Done")
 
     for y, P_y in enumerate(icarl.exemplar_sets):
-        print "Exemplar set for class-%d:" % (y), P_y.shape
+        print ("Exemplar set for class-%d:" % (y), P_y.shape)
         #show_images(P_y[:10])
 
     icarl.n_known = icarl.n_classes
-    print "iCaRL classes: %d" % icarl.n_known
+    print ("iCaRL classes: %d" % icarl.n_known)
 
     total = 0.0
     correct = 0.0

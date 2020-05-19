@@ -72,7 +72,7 @@ class iCaRLNet(nn.Module):
         batch_size = x.size(0)
 
         if self.compute_means:
-            print "Computing mean of exemplars...",
+            print ("Computing mean of exemplars...")
             exemplar_means = []
             for P_y in self.exemplar_sets:
                 features = []
@@ -89,7 +89,7 @@ class iCaRLNet(nn.Module):
                 exemplar_means.append(mu_y)
             self.exemplar_means = exemplar_means
             self.compute_means = False
-            print "Done"
+            print ("Done")
 
         exemplar_means = self.exemplar_means
         means = torch.stack(exemplar_means) # (n_classes, feature_size)
@@ -139,9 +139,9 @@ class iCaRLNet(nn.Module):
             exemplar_set.append(images[i])
             exemplar_features.append(features[i])
             """
-            print "Selected example", i
-            print "|exemplar_mean - class_mean|:",
-            print np.linalg.norm((np.mean(exemplar_features, axis=0) - class_mean))
+            print ("Selected example", i)
+            print ("|exemplar_mean - class_mean|:")
+            print (np.linalg.norm((np.mean(exemplar_features, axis=0) - class_mean)))
             #features = np.delete(features, i, axis=0)
             """
         
@@ -169,7 +169,7 @@ class iCaRLNet(nn.Module):
         new_classes = [cls for cls in classes if cls > self.n_classes - 1]
         self.increment_classes(len(new_classes))
         self.cuda()
-        print "%d new classes" % (len(new_classes))
+        print ("%d new classes" % (len(new_classes)))
 
         # Form combined training set
         self.combine_dataset_with_exemplars(dataset)
@@ -215,5 +215,5 @@ class iCaRLNet(nn.Module):
                 optimizer.step()
 
                 if (i+1) % 10 == 0:
-                    print ('Epoch [%d/%d], Iter [%d/%d] Loss: %.4f' 
+                    print ('Epoch [%d/%d], Iter [%d/%d] Loss: %.4f')
                            %(epoch+1, num_epochs, i+1, len(dataset)//batch_size, loss.data[0]))
