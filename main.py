@@ -10,8 +10,8 @@ import torch.nn.functional as F
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 
-from icarl.data_loader import iCIFAR10, iCIFAR100
-from icarl.model import iCaRLNet
+from icarl1.data_loader import iCIFAR10, iCIFAR100
+from icarl1.model import iCaRLNet
 
 def show_images(images):
     N = images.shape[0]
