@@ -215,5 +215,5 @@ class iCaRLNet(nn.Module):
                 optimizer.step()
 
                 if (i+1) % 10 == 0:
-                    print ('Epoch [%d/%d], Iter [%d/%d] Loss: %.4f')
+                    print ('Epoch [%d/%d], Iter [%d/%d] Loss: %.4f'\
                            %(epoch+1, num_epochs, i+1, len(dataset)//batch_size, loss.data[0]))
