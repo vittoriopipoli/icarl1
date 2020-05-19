@@ -6,7 +6,7 @@ from torch.autograd import Variable
 import numpy as np
 from PIL import Image
 
-from resnet import resnet18
+from icarl1.resnet import resnet18
 
 # Hyper Parameters
 num_epochs = 50
