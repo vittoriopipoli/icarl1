@@ -2,6 +2,7 @@ from torchvision.datasets import CIFAR10
 import numpy as np
 import torch
 from PIL import Image
+import sys
 
 class iCIFAR10(CIFAR10):
     def __init__(self, root,
