@@ -10,8 +10,9 @@ import torch.nn.functional as F
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 
-from icarl1.data_loader import iCIFAR10, iCIFAR100
-from icarl1.model import iCaRLNet
+# from data_loader_2 import iCIFAR10, iCIFAR100
+from data_loader import iCIFAR10, iCIFAR100
+from model import iCaRLNet
 
 def show_images(images):
     N = images.shape[0]
@@ -57,7 +58,7 @@ for s in range(0, total_classes, num_classes):
     print ("Loading training examples for classes", range(s, s+num_classes))
     train_set = iCIFAR10(root='./data',
                          train=True,
-                         classes=range(s,s+num_classes),
+                         classes=range(s, s+num_classes),
                          download=True,
                          transform=transform_test)
     train_loader = torch.utils.data.DataLoader(train_set, batch_size=100,
@@ -81,7 +82,7 @@ for s in range(0, total_classes, num_classes):
     icarl.reduce_exemplar_sets(m)
 
     # Construct exemplar sets for new classes
-    for y in xrange(icarl.n_known, icarl.n_classes):
+    for y in range(icarl.n_known, icarl.n_classes):
         print ("Constructing exemplar set for class-%d..." %(y))
         images = train_set.get_image_class(y)
         icarl.construct_exemplar_set(images, m, transform_test)

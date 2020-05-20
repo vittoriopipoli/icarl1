@@ -1,18 +1,21 @@
+from cffi.backend_ctypes import xrange
 from torchvision.datasets import CIFAR10
 import numpy as np
 import torch
 from PIL import Image
 import sys
 
+
+
 class iCIFAR10(CIFAR10):
     def __init__(self, root,
-                 classes=range(10),
                  train=True,
                  transform=None,
                  target_transform=None,
-                 download=False):
+                 download=False, classes=None):
         super(iCIFAR10, self).__init__(root,
                                        train=train,
+                                       classes=classes,
                                        transform=transform,
                                        target_transform=target_transform,
                                        download=download)
@@ -21,6 +24,9 @@ class iCIFAR10(CIFAR10):
         if self.train:
             train_data = []
             train_labels = []
+            for i in range(500*classes[0], 500*classes[-1]):
+                train_data.append(i)
+                train_labels.append(i)
 
             for i in xrange(len(self.train_data)):
                 if self.train_labels[i] in classes:

@@ -5,8 +5,7 @@ import torch.optim as optim
 from torch.autograd import Variable
 import numpy as np
 from PIL import Image
-
-from icarl1.resnet import resnet18
+from resnet import resnet18
 
 # Hyper Parameters
 num_epochs = 50
@@ -97,7 +96,7 @@ class iCaRLNet(nn.Module):
         means = means.transpose(1, 2) # (batch_size, feature_size, n_classes)
 
         feature = self.feature_extractor(x) # (batch_size, feature_size)
-        for i in xrange(feature.size(0)): # Normalize
+        for i in range(feature.size(0)): # Normalize
             feature.data[i] = feature.data[i] / feature.data[i].norm()
         feature = feature.unsqueeze(2) # (batch_size, feature_size, 1)
         feature = feature.expand_as(means) # (batch_size, feature_size, n_classes)
@@ -128,7 +127,7 @@ class iCaRLNet(nn.Module):
 
         exemplar_set = []
         exemplar_features = [] # list of Variables of shape (feature_size,)
-        for k in xrange(m):
+        for k in range(m):
             S = np.sum(exemplar_features, axis=0)
             phi = features
             mu = class_mean
@@ -160,12 +159,14 @@ class iCaRLNet(nn.Module):
             dataset.append(exemplar_images, exemplar_labels)
 
 
-    def update_representation(self, dataset):
+    def update_representation(self, dataset, reprdata):
 
         self.compute_means = True
-
+        labels = []
+        for image, label in dataset:
+            labels.append(label)
         # Increment number of weights in final fc layer
-        classes = list(set(dataset.train_labels))
+        classes = list(set(labels))
         new_classes = [cls for cls in classes if cls > self.n_classes - 1]
         self.increment_classes(len(new_classes))
         self.cuda()
@@ -174,14 +175,21 @@ class iCaRLNet(nn.Module):
         # Form combined training set
         self.combine_dataset_with_exemplars(dataset)
 
-        loader = torch.utils.data.DataLoader(dataset, batch_size=batch_size,
-                                               shuffle=True, num_workers=2)
+        loader = torch.utils.data.DataLoader(reprdata, batch_size=batch_size,
+                                               shuffle=True, num_workers=0)
 
         # Store network outputs with pre-update parameters
         q = torch.zeros(len(dataset), self.n_classes).cuda()
+        DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
+        # DEVICE = 'cpu'
+        print(DEVICE)
         for indices, images, labels in loader:
             images = Variable(images).cuda()
             indices = indices.cuda()
+            # images = torch.tensor(images).to(DEVICE)
+            # print("images CUDA ACCESS")
+            # indices = torch.tensor(indices).to(DEVICE)
+            # print("indices CUDA ACCESS")
             g = F.sigmoid(self.forward(images))
             q[indices] = g.data
         q = Variable(q).cuda()
@@ -189,7 +197,7 @@ class iCaRLNet(nn.Module):
         # Run network training
         optimizer = self.optimizer
 
-        for epoch in xrange(num_epochs):
+        for epoch in range(num_epochs):
             for i, (indices, images, labels) in enumerate(loader):
                 images = Variable(images).cuda()
                 labels = Variable(labels).cuda()
@@ -207,7 +215,7 @@ class iCaRLNet(nn.Module):
                     g = F.sigmoid(g)
                     q_i = q[indices]
                     dist_loss = sum(self.dist_loss(g[:,y], q_i[:,y])\
-                            for y in xrange(self.n_known))
+                            for y in range(self.n_known))
                     #dist_loss = dist_loss / self.n_known
                     loss += dist_loss
 
@@ -216,4 +224,4 @@ class iCaRLNet(nn.Module):
 
                 if (i+1) % 10 == 0:
                     print ('Epoch [%d/%d], Iter [%d/%d] Loss: %.4f'\
-                           %(epoch+1, num_epochs, i+1, len(dataset)//batch_size, loss.data[0]))
+                           %(epoch+1, num_epochs, i+1, len(dataset)//batch_size, loss.item()))
