@@ -10,9 +10,10 @@ import torchvision
 
 # Hyper Parameters
 # num_epochs = 50
-num_epochs = 50
-batch_size = 10
+num_epochs = 70
+batch_size = 250
 learning_rate = 0.002
+# learning_rate = 0.1
 
 
 class iCaRLNet(nn.Module):
@@ -197,7 +198,7 @@ class iCaRLNet(nn.Module):
         dataset = self.combine_dataset_with_exemplars(dataset)  #IMPORTANT!!!!
 
         loader = torch.utils.data.DataLoader(dataset, batch_size=batch_size,
-                                             shuffle=True, num_workers=0)
+                                             shuffle=True, num_workers=4,  drop_last= True)
         indexes = list(range(len(dataset)))
         # Store network outputs with pre-update parameters
         q = torch.zeros(len(dataset), self.n_classes).cuda()
