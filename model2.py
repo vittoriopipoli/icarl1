@@ -5,16 +5,16 @@ import torch.optim as optim
 from torch.autograd import Variable
 import numpy as np
 from PIL import Image
-from resnet import resnet18 #inutilizzata per ora
-from resnet import resnet34 #inutilizzata per ora
-from resnetNapo import resnet32
+from icarl1.resnet import resnet18 #inutilizzata per ora
+from icarl1.resnet import resnet34 #inutilizzata per ora
+from icarl1.resnetNapo import resnet32
 import torchvision
 import math
 
 # Hyper Parameters
 # num_epochs = 50
-num_epochs = 1
-batch_size = 100
+num_epochs = 50
+batch_size = 128
 learning_rate = 0.002
 
 
@@ -206,7 +206,7 @@ class iCaRLNet(nn.Module):
             reprdata.append([indexes[i], dataset[i][0], dataset[i][1]]) #indici immagine label
 
         loader = torch.utils.data.DataLoader(reprdata, batch_size=batch_size,
-                                             shuffle=True, num_workers=0, drop_last=True)
+                                             shuffle=True, num_workers=4, drop_last=True)
 
         # Store network outputs with pre-update parameters
         q = torch.zeros(len(dataset), self.n_classes).cuda()
@@ -243,7 +243,7 @@ class iCaRLNet(nn.Module):
                 images = Variable(images).cuda()
                 labels = Variable(labels).cuda()
                 # indices = indices.cuda()
-                # y_hot = F.one_hot(labels, self.n_classes)
+                y_hot = F.one_hot(labels, self.n_classes)
                 optimizer.zero_grad()
                 g = self.forward(images)
 
@@ -254,23 +254,25 @@ class iCaRLNet(nn.Module):
 
                 # gnew = [g[:, y] for y in range(self.n_known, self.n_classes)]
                 # gnew.transpose(0,1)
-
-                labels = labels.type_as(g)
-                loss = sum(self.BCEwithL(g[:, y], labels)\
-                                    for y in range(self.n_known, self.n_classes))
+                y_hot = y_hot.type_as(g)
+                loss = self.BCEwithL(g[...,self.n_classes-10:self.n_classes], y_hot[...,self.n_classes-10:self.n_classes])
+                # labels = labels.type_as(g)
+                # loss = sum(self.BCEwithL(g[:, y], labels)\
+                #                     for y in range(self.n_known, self.n_classes))
                 loss = loss / len(range(self.n_known, self.n_classes))
 
                 # Distilation loss for old classes
                 if self.n_known > 0:
-                    g = torch.sigmoid(g)
+                    # g = torch.sigmoid(g)
 
                     q_i = q[indices]  #%%%%%%prev%%%%%%%%%%
                     # q_i = q[list(range(ind, ind + batch_size))]
                     # ind = ind + batch_size
                     # print("q_i: {}".format(q_i))
-                    dist_loss = sum(self.dist_loss(g[:, y], q_i[:, y]) \
-                                    for y in range(self.n_known))
-                    # dist_loss = dist_loss / self.n_known
+                    dist_loss = self.BCEwithL(g[...,:self.n_classes-10], q[...,:self.n_classes-10])
+                    # dist_loss = sum(self.dist_loss(g[:, y], q_i[:, y]) \
+                    #                 for y in range(self.n_known))
+                    dist_loss = dist_loss / self.n_known
                     loss += dist_loss
 
                 loss.backward()
