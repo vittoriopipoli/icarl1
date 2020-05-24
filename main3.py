@@ -10,8 +10,8 @@ import torch.nn.functional as F
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 
-from model import iCaRLNet
-from cifar100Class import cifar_100
+from icarl1.model import iCaRLNet
+from icarl1.cifar100Class import cifar_100
 
 import torch
 import torchvision
